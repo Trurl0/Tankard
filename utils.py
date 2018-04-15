@@ -17,9 +17,9 @@ def magnitude(v):
 def normalize(v):
     vmag = magnitude(v)
     try:
-        return [ v[i]/vmag  for i in range(len(v)) ]
+        return tuple([ v[i]/vmag  for i in range(len(v)) ])
     except Exception as e:
-        return [0, 0]
+        return (0, 0)
         
         
 def add(u, v):
@@ -35,7 +35,7 @@ def dot(u, v):
 
 
 def mult(v, x):
-    return [i*x for i in v]
+    return tuple([i*x for i in v])
 
 
 def raycast(ini, dir, objects, max_dist, first_only = False, ignore = None):
@@ -51,8 +51,10 @@ def raycast(ini, dir, objects, max_dist, first_only = False, ignore = None):
             try:
                 if t.rect.collidepoint(point):
                     if t is not ignore:
-                        if t not in [obj[0] for obj in hits]:
-                            hits.append((t, point))
+                        # if t not in [obj[0] for obj in hits]:
+                            # hits.append((t, point))
+                        if t not in hits:
+                            hits.append((t))
             except Exception as e:
                 print(e)
         if first_only and hits:

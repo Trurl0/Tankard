@@ -33,6 +33,7 @@ class Game:
       
     def pause(self):
         """Pause the game"""
+        
         wait = True
         while wait:
             for event in pygame.event.get():
@@ -50,7 +51,8 @@ class Game:
         self.screen.fill(self.bg_color)
          
     def new(self):
-        """Reset all components"""
+        """Reset all components for a new game"""
+        
         self.tanks = []
         self.walls = []
         
@@ -61,8 +63,8 @@ class Game:
         # for i in range(10):
             # self.tanks.append(Tank("MK"+str(i), (random.randint(0, 255),random.randint(0, 255),random.randint(0, 255)), [random.randint(20, self.screen_width-20), random.randint(20, self.screen_height-20)]))
         
-        t1 = Tank(self, "MK1", BLUE, [200, 300])
-        t2 = Tank(self, "MK2", RED, [400, 100])
+        t1 = Tank(self, "MK1", "player1", BLUE, [200, 300])
+        t2 = Tank(self, "MK2", "player2", RED, [400, 100])
         self.tanks.append(t1)
         self.tanks.append(t2)
         
@@ -74,11 +76,8 @@ class Game:
        
         # Obstacles
         self.walls.append(Wall(self, [300, 50], [10, 100], BLACK, name="Wall1"))
-        self.walls.append(Wall(self, [305, 155], [10, 50], BLACK, name="Wall2"))
-        self.walls.append(Wall(self, [310, 155], [10, 50], BLACK, name="Wall2b"))
-        self.walls.append(Wall(self, [310, 205], [10, 50], BLACK, name="Wall3"))
-        self.walls.append(Wall(self, [315, 255], [10, 50], BLACK, name="Wall4"))
-        self.walls.append(Wall(self, [320, 305], [10, 100], BLACK, name="Wall5"))
+        # self.walls.append(Wall(self, [305, 155], [10, 50], BLACK, name="Wall2"))
+        self.walls.append(Wall(self, [310, 300], [10, 50], BLACK, name="Wall3"))
         # self.walls.append(Wall([320, 50], [10, 600], BLACK))
         # self.walls.append(Wall([350, 50], [10, 600], BLACK))
         # self.walls.append(Wall([400, 50], [10, 600], BLACK))
