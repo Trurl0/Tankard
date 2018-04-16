@@ -5,7 +5,7 @@ from utils import *
 
 
 class Tank():
-    def __init__(self, game, name, input_file, color=RED, pos=(0,0), size=20, life=100, max_acc=0.1, max_speed=0.1, turret_speed=0.001, gun_max_cooldown=2000, shoot_range=200, gun_damage=10, sonar_range=400, sonar_max_cooldown=1000):
+    def __init__(self, game, name, input_file, color=RED, pos=(0,0), size=20, life=100, max_acc=0.00001, max_speed=0.1, turret_speed=0.001, gun_max_cooldown=2000, shoot_range=200, gun_damage=10, sonar_range=400, sonar_max_cooldown=1000):
         
         self.input_file =  input_file
         self.input_function = "player_input"
@@ -58,9 +58,8 @@ class Tank():
             self.sonar_cooldown = self.sonar_max_cooldown
             self.sonar_reading = self.sonar()
 
-            """Here goes the player logic"""
-            """Here goes the player logic"""
-            """Here goes the player logic"""
+            
+            #----------Here goes the player logic----------#
         
             # Import player code
             self.player_input = getattr(__import__(self.input_file, fromlist=[self.input_function]), self.input_function)
@@ -82,13 +81,11 @@ class Tank():
             if not isinstance(self.shoot_order, bool):
                 self.shoot_order = False
                 
-            """Here ends the player logic"""
-            """Here ends the player logic"""
-            """Here ends the player logic"""
-        
+            #----------Here ends the player logic----------#
+
         
         # Substract friction, add acceleration
-        friction = 0.9
+        friction = 0.9999
         self.vel = mult(self.vel, friction)
         self.vel = add(self.vel, self.acc)
         # Cap at max speed
