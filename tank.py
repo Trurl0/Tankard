@@ -61,24 +61,31 @@ class Tank():
             
             #----------Here goes the player logic----------#
         
-            # Import player code
-            self.player_input = getattr(__import__(self.input_file, fromlist=[self.input_function]), self.input_function)
-        
-            # Use player code
-            self.acc, self.gun_target, self.shoot_order = self.player_input(self.pos, self.sonar_reading)
+            try:
+                # Import player code
+                self.player_input = getattr(__import__(self.input_file, fromlist=[self.input_function]), self.input_function)
+            
+                # Use player code
+                self.acc, self.gun_target, self.shoot_order = self.player_input(self.pos, self.sonar_reading)
 
-            # Checks and limitations
-            if not isinstance(self.acc, tuple) or len(self.acc)!=2:
+                # Checks and limitations
+                if not isinstance(self.acc, tuple) or len(self.acc)!=2:
+                    self.acc = (0, 0)
+
+                else:
+                    if magnitude(self.acc) > self.max_acc:
+                        self.acc = mult(normalize(self.acc), self.max_acc)
+                    
+                if not isinstance(self.gun_target, tuple) or len(self.gun_target)!=2:
+                    self.gun_target = (0, 1)
+                else:
+                    self.gun_target = normalize(self.gun_target)
+                    
+                if not isinstance(self.shoot_order, bool):
+                    self.shoot_order = False
+            except:
                 self.acc = (0, 0)
-
-            else:
-                if magnitude(self.acc) > self.max_acc:
-                    self.acc = mult(normalize(self.acc), self.max_acc)
-                
-            if not isinstance(self.gun_target, tuple) or len(self.gun_target)!=2:
-                self.gun_target = (1, 0)
-                
-            if not isinstance(self.shoot_order, bool):
+                self.gun_target = (0, 1)
                 self.shoot_order = False
                 
             #----------Here ends the player logic----------#

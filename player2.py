@@ -21,7 +21,7 @@ def player_input(my_pos, sonar_reading):
             target_pos = obj[2].center
 
     if target is not None:
-        gun_dir = normalize(sub(target_pos, my_pos))
+        gun_dir = sub(target_pos, my_pos)
         shoot_order = True
     
     
