@@ -3,6 +3,8 @@ import math
 import random
 from wall import Wall
 from tank import Tank
+from battery import Battery
+from bullet import Bullet
 from utils import *
 
 class Game:
@@ -55,16 +57,15 @@ class Game:
         
         self.tanks = []
         self.walls = []
+        self.batteries = []
+        self.bullets = []
         
         # Background
         self.screen.fill(self.bg_color)
         
-        # Tanks
-        # for i in range(10):
-            # self.tanks.append(Tank("MK"+str(i), (random.randint(0, 255),random.randint(0, 255),random.randint(0, 255)), [random.randint(20, self.screen_width-20), random.randint(20, self.screen_height-20)]))
-        
-        t1 = Tank(self, "MK1", "player1", BLUE, [200, 300])
-        t2 = Tank(self, "MK2", "player2", RED, [400, 100])
+        # Tanks        
+        t1 = Tank(self, "MK1", "player1.py", BLUE, [200, 300])
+        t2 = Tank(self, "MK2", "player2.py", RED, [400, 100])
         self.tanks.append(t1)
         self.tanks.append(t2)
         
@@ -78,9 +79,12 @@ class Game:
         self.walls.append(Wall(self, [300, 50], [10, 100], BLACK, name="Wall1"))
         # self.walls.append(Wall(self, [305, 155], [10, 50], BLACK, name="Wall2"))
         self.walls.append(Wall(self, [310, 300], [10, 50], BLACK, name="Wall3"))
-        # self.walls.append(Wall([320, 50], [10, 600], BLACK))
-        # self.walls.append(Wall([350, 50], [10, 600], BLACK))
-        # self.walls.append(Wall([400, 50], [10, 600], BLACK))
+        
+        for i in range(5):
+            self.batteries.append(Battery(self, [random.randint(50, self.screen_width-50), random.randint(50, self.screen_height-50)], name="Battery"))
+            
+        for i in range(10):
+             self.bullets.append(Bullet(self, [random.randint(50, self.screen_width-50), random.randint(50, self.screen_height-50)], vel=(0.1,0), name="Bullet"))
         
     def run(self):
       while self.running:
@@ -109,25 +113,51 @@ class Game:
             t.update(now)
             
             # Check stuff
-            self.check_collisions(t)
+            self.check_tank_collisions(t)
+            
+        for b in self.bullets:
+            b.update(now)
+            
+            # Check stuff
+            self.check_bullet_collisions(b)
         
-    def check_collisions(self, t):
-        # Check collisions
+    def check_bullet_collisions(self, bullet):
+    
+        for coll in self.tanks:
+            if bullet.rect.colliderect(coll):
+    
+                    coll.life -= bullet.damage
+                    
+                    self.bullets.remove(bullet)
+                    
+        for coll in self.walls:
+            if bullet.rect.colliderect(coll):
+                
+                self.bullets.remove(bullet)
+    
+    def check_tank_collisions(self, tank):
+        # Check collisions, this could be done in each class...
         
-        for c in self.walls+self.tanks:
-            if c is not t:
-                if t.rect.colliderect(c):
+        for coll in self.walls+self.tanks:
+            if coll is not tank:
+                if tank.rect.colliderect(coll):
                     
-                    intersection = t.rect.clip(c)
-                    push = normalize(sub(t.pos, intersection))
-                    # print( str(t.rect.center) +", "+ str(intersection.center) +", "+ str(push))
+                    intersection = tank.rect.clip(coll)
+                    push = mult(normalize(sub(tank.pos, intersection)), 2)
                     
-                    t.pos[0] += push[0]
-                    t.pos[1] += push[1]
+                    tank.pos = add(push, tank.pos)
                     
                     # Stop after collision?
-                    t.vel = [0, 0]
-                    t.acc = [0, 0]
+                    tank.vel = (0, 0)
+                    tank.acc = (0, 0)
+                    
+        for battery in self.batteries:
+            if tank.rect.colliderect(battery):
+            
+                tank.life += battery.energy
+                
+                self.batteries.remove(battery)
+                    
 
     def draw(self):
         """Make all self.screen elements draw themselves"""
@@ -136,7 +166,7 @@ class Game:
         self.screen.fill(self.bg_color)
         
         # Everything
-        for a in self.walls+self.tanks:
+        for a in self.batteries+self.walls+self.tanks+self.bullets:
             a.draw()
             
     def game_over(self):

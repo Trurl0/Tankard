@@ -23,11 +23,11 @@ def normalize(v):
         
         
 def add(u, v):
-    return [ u[i]+v[i] for i in range(len(u)) ]
+    return tuple([ u[i]+v[i] for i in range(len(u)) ])
 
 
 def sub(u, v):
-    return [ u[i]-v[i] for i in range(len(u)) ]
+    return tuple([ u[i]-v[i] for i in range(len(u)) ])
 
 
 def dot(u, v):
