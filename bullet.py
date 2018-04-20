@@ -22,7 +22,6 @@ class Bullet:
     
     def draw(self):
     
-        # pygame.draw.rect(self.game.screen, self.color, self.rect)
         pygame.draw.circle(self.game.screen, self.color, self.rect.center, self.size)
         
     def __str__():

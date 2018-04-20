@@ -6,15 +6,17 @@ from importlib import reload
 from bullet import Bullet
 
 class Tank():
-    def __init__(self, game, name, input_file, color=RED, pos=(0,0), size=20, life=100, max_acc=0.00001, max_speed=0.1, turret_speed=0.011, gun_max_cooldown=2000, shoot_range=200, shoot_speed=0.2, gun_damage=10, sonar_range=400, sonar_max_cooldown=1000):
+    def __init__(self, game, name, team, input_file, color=RED, pos=(0,0), size=20, life=100, max_acc=0.002, max_speed=0.3, turret_speed=0.03, gun_max_cooldown=500, shoot_range=200, shoot_speed=1, gun_damage=10, sonar_range=400, sonar_max_cooldown=500):
+        
+        self.game = game
         
         self.input_file =  input_file
         self.input_function = "player_input"
-        # self.player_input = getattr(__import__(self.input_file, fromlist=[self.input_function]), self.input_function)
-
-        self.game = game
+        self.player_input_max_cooldown = 100
+        self.player_input_cooldown = self.player_input_max_cooldown
         
         self.name = name
+        self.team = team
         self.color = color
         
         self.life = life
@@ -33,10 +35,10 @@ class Tank():
         # Gun
         self.gun_damage = gun_damage
         self.turret_speed = turret_speed
-        self.shoot_range = shoot_range
+        self.shoot_range = shoot_range  # Unused
         self.shoot_speed = shoot_speed
         self.gun_max_cooldown = gun_max_cooldown
-        self.gun_cooldown = gun_max_cooldown
+        self.gun_cooldown = gun_max_cooldown/2
         self.gun_size = 15
         self.gun_dir = (0, -1)
         self.gun_target = (0, -1)
@@ -61,11 +63,15 @@ class Tank():
             self.sonar_reading = self.sonar()
 
             
-            #----------Here goes the player logic----------#
+        #----------Here goes the player logic----------#
         
+        self.player_input_cooldown -= 1
+        if self.player_input_cooldown <= 0:
+            self.player_input_cooldown = self.player_input_max_cooldown
+            
             try:
+
                 # Import player code
-                # self.player_input = getattr(__import__(self.input_file, fromlist=[self.input_function]), self.input_function)
                 exec(open(self.input_file, "r").read(), globals())
                 self.player_input = player_input
                 
@@ -96,11 +102,11 @@ class Tank():
                 self.gun_target = (0, 1)
                 self.shoot_order = False
                 
-            #----------Here ends the player logic----------#
+        #----------Here ends the player logic----------#
 
         
         # Substract friction, add acceleration
-        friction = 0.9999
+        friction = 0.99
         self.vel = mult(self.vel, friction)
         self.vel = add(self.vel, self.acc)
         # Cap at max speed
@@ -122,7 +128,7 @@ class Tank():
             self.gun_cooldown = self.gun_max_cooldown
             self.shoot_order = False
             
-            self.game.bullets.append(Bullet(self.game, add(self.rect.center, mult(self.gun_dir, 20)), vel=mult(normalize(self.gun_dir), self.shoot_speed), name="Bullet"))
+            self.game.bullets.append(Bullet(self.game, add(self.rect.center, mult(self.gun_dir, 20)), vel=mult(normalize(self.gun_dir), self.shoot_speed), damage=self.gun_damage))
             
             # hits = raycast(self.rect.center, self.gun_dir, self.game.tanks+self.game.walls, self.shoot_range, first_only=True, ignore=self)
             # Hit first object
@@ -169,15 +175,15 @@ class Tank():
         pygame.draw.line(self.game.screen, GREEN, add(self.pos, (0,-10)),add(self.pos, (self.size*(self.life/100),-10)), 5)
         
         # Shot
-        if self.gun_cooldown > self.gun_max_cooldown-500:
-            if self.gun_cooldown > self.gun_max_cooldown-100:
+        if self.gun_cooldown > self.gun_max_cooldown-80:
+            if self.gun_cooldown > self.gun_max_cooldown-20:
                 shot_ini = gun_end
                 shot_end = add(gun_center, mult(normalize(self.gun_dir), self.gun_size*3))
                 shot_size = 20
                 pygame.draw.circle(self.game.screen, YELLOW, [int(i) for i in gun_end], 15)
                 pygame.draw.line(self.game.screen, YELLOW, shot_ini,shot_end, shot_size)
                 
-            elif self.gun_cooldown > self.gun_max_cooldown-300:
+            elif self.gun_cooldown > self.gun_max_cooldown-60:
                 shot_ini = gun_end
                 shot_end = add(gun_center, mult(normalize(self.gun_dir), self.gun_size*3))
                 shot_size = 10
@@ -185,18 +191,9 @@ class Tank():
             else:
                 shot_ini = gun_end
                 shot_end = add(gun_center, mult(normalize(self.gun_dir), self.gun_size*2))
-                shot_size = 10
+                shot_size = 5
                 pygame.draw.line(self.game.screen, YELLOW, shot_ini,shot_end, shot_size)
-            
-            # elif self.gun_cooldown > self.gun_max_cooldown-300:
-                # shot_ini = gun_end
-                # shot_end = add(gun_center, mult(normalize(self.gun_dir), self.gun_size*10))
-                # shot_size = 2
-            # else:
-                # shot_ini = add(gun_center, mult(normalize(self.gun_dir), self.gun_size*10))
-                # shot_end = add(gun_center, mult(normalize(self.gun_dir), self.gun_size*20))
-                # shot_size = 1
-    
+                
     def __str__():
     
         return self.name
