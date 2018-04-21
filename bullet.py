@@ -3,7 +3,7 @@ from utils import *
 
 class Bullet:
 
-    def __init__(self, game, pos=[0,0], size=3, vel=(0,0), damage=10, color=(100,100,100), name="Bullet"):
+    def __init__(self, game, pos=[0,0], size=3, vel=(0,0), damage=10, color=(50,50,50), name="Bullet"):
     
         self.game = game
         self.name = name
@@ -19,6 +19,25 @@ class Bullet:
     
         self.pos = add(self.pos, self.vel)
         self.rect = pygame.Rect(self.pos[0], self.pos[1], self.size, self.size)
+    
+    def check_collisions(self):
+    
+        for coll in self.game.tanks:
+            if self.rect.colliderect(coll):
+                try:
+                    coll.life -= self.damage
+                    
+                    self.game.bullets.remove(self)
+                    
+                except Exception as e:
+                    pass # print(e)
+                    
+        for coll in self.game.walls:
+            if self.rect.colliderect(coll):
+                try:                    
+                    self.game.bullets.remove(self)
+                except Exception as e:
+                    pass # print(e)
     
     def draw(self):
     
