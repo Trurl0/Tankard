@@ -30,6 +30,7 @@ from utils import *
 class Game:
     def __init__(self):
     
+        pygame.mixer.pre_init(44100, 16, 2, 4096) #frequency, size, channels, buffersize
         pygame.init()
         pygame.display.set_caption('Tanks')
         # DISPLAYSURF = pygame.display.set_mode((400, 300), pygame.FULLSCREEN)
@@ -54,6 +55,7 @@ class Game:
         self.gun_cooldown = 500
         self.bullet_damage = 10
         
+        self.sound = 0
         self.debug = 0
         self.fullscreen = 0
         
@@ -65,6 +67,15 @@ class Game:
         self.screen=pygame.display.set_mode([self.screen_width, self.screen_height])
         # self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.FULLSCREEN)
         
+        if self.sound:
+            self.gun_sound = pygame.mixer.Sound("sounds/gunshot.wav")
+            self.battery_sound = pygame.mixer.Sound("sounds/power_up.wav")
+            self.failure_sound = pygame.mixer.Sound("sounds/power_failure.wav")
+            self.ambient_sound = pygame.mixer.Sound("sounds/ambienz_buzz.wav")
+            pygame.mixer.music.load("sounds/ambienz_buzz.wav")
+                
+        for i in range(2):
+            time.sleep(1)
         self.last = pygame.time.get_ticks()
         self.clock = pygame.time.Clock()
         
@@ -78,7 +89,7 @@ class Game:
     
         if not os.path.exists(filename):
              with open(filename, 'w') as f:
-                f.write("width = 1000\nheight = 600\nbackground_color = (160, 175, 160)\n\nnumber_of_obstacles = 6\nnumber_of_batteries = 10\n\nplayers = 2\ntanks_per_team = 5\nplayer1 = player1.py\nplayer2 = player2.py\n\ngun_cooldown = 4\nbullet_damage = 20\n\n# Round limit (seconds)\ntime_limit = 60\n\ndebug = 0")
+                f.write("width = 1000\nheight = 600\nbackground_color = (160, 175, 160)\n\nplayers = 2\ntanks_per_team = 5\nplayer1 = player1.py\nplayer2 = player2.py\n\nnumber_of_obstacles = 6\nnumber_of_batteries = 10\ntime_limit = 60\ngun_cooldown = 4\nbullet_damage = 20\n\nsound = 1\ndebug = 0")
 
         with open(filename, "r") as f:
             for line in f.readlines():
@@ -132,6 +143,9 @@ class Game:
                     
                 if "debug" in line:
                     self.debug=int(line.split("=")[-1].strip())
+                    
+                if "sound" in line:
+                    self.sound=int(line.split("=")[-1].strip())
                     
                 if "time_limit" in line:
                     self.time_limit=int(line.split("=")[-1].strip())
@@ -192,6 +206,9 @@ class Game:
         
         self.game_init_time = time.time()
         
+        if self.sound:
+            pygame.mixer.music.play(-1)
+        
     def run(self):
       while self.running:
          self.event()
@@ -212,7 +229,7 @@ class Game:
                     self.pause()
                     
                 if event.key == pygame.K_DELETE:
-                    if self.selected:
+                    if self.debug and self.selected:
                         if self.selected in self.tanks:
                             self.tanks.remove(self.selected)
                         if self.selected in self.batteries:
@@ -221,7 +238,7 @@ class Game:
                             self.walls.remove(self.selected)
                     
             # Mouse
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.debug and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 x, y = event.pos
                 
                 # Lose control
@@ -237,7 +254,7 @@ class Game:
                         if self.selected in self.tanks:
                             self.selected.selected = True
 
-            if self.selected in self.tanks:
+            if self.debug and self.selected in self.tanks:
             
                 if event.type==pygame.KEYDOWN:
                     if event.key in [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d]:
@@ -257,11 +274,10 @@ class Game:
                         
                 if event.type==pygame.MOUSEBUTTONDOWN and event.button == 3:
                     self.selected.shoot_order = True
-                
-                    
                     
     def update(self):
         """Make all screen elements update themselves"""
+        
         
         # Used to manage how fast the screen updates
         self.clock.tick(500)

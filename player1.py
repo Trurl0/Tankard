@@ -1,14 +1,14 @@
 from utils import *
 import random
 
-def player_input(screen_width, screen_height, tank_pos, tank_vel, tank_life, tank_gun_dir, tank_gun_cooldown, tank_team, sonar_reading):
+def player_input(map_width, map_height, tank_pos, tank_vel, tank_life, tank_gun_dir, tank_gun_cooldown, tank_team, sonar_reading):
         
     acceleration = (0, 0)
     gun_dir = (0, 0)
     shoot_order = False
     
     #----------Your code here----------#
-    acceleration = sub((screen_width/2, screen_height/2), tank_pos)   
+    acceleration = sub((map_width/2, map_height/2), tank_pos)   
     random_acc = (random.uniform(-1, 1), random.uniform(-1, 1))
     
     shoot_target = None
@@ -43,7 +43,7 @@ def player_input(screen_width, screen_height, tank_pos, tank_vel, tank_life, tan
         if "Tank" in obj_type and obj_team == tank_team:
             dist =  magnitude(sub(obj_rect.center, tank_pos))
             if dist < 100:
-                avoid_allies_acc = add(avoid_allies_acc, mult(sub(tank_pos, obj_rect.center), 10))
+                avoid_allies_acc = add(avoid_allies_acc, mult(sub(tank_pos, obj_rect.center), 50))
             
     
     if closest_battery:
@@ -56,7 +56,8 @@ def player_input(screen_width, screen_height, tank_pos, tank_vel, tank_life, tan
             
     if closest_enemy is not None:
         gun_dir = sub(closest_enemy, tank_pos)
-        if check_clear_shot(tank_pos, gun_dir, closest_enemy, [obj[2] for obj in sonar_reading]):
+         # check_clear_shot(tank_pos, gun_dir, tank_gun_dir, closest_enemy, obstacles)
+        if check_clear_shot(tank_pos, gun_dir, tank_gun_dir, closest_enemy, [obj[2] for obj in sonar_reading]):
             shoot_order = True
     
     # Collision avoidance
@@ -75,7 +76,7 @@ def player_input(screen_width, screen_height, tank_pos, tank_vel, tank_life, tan
     
     #----------Your code here----------#
         
-    return acceleration, gun_dir, shoot_order
+    return (acceleration, gun_dir, shoot_order)
     
     
 def avoid_obstacles(tank_pos, target, acceleration, obstacles, avoid_distance):
@@ -97,11 +98,11 @@ def avoid_obstacles(tank_pos, target, acceleration, obstacles, avoid_distance):
     return mult(new_acceleration, acc_magnitude)
     
     
-def check_clear_shot(tank_pos, gun_dir, closest_enemy, obstacles):
+def check_clear_shot(tank_pos, gun_dir, tank_gun_dir, closest_enemy, obstacles):
     
     shot_is_clear = False
     dist_to_enemy = magnitude(gun_dir)
-    hit = raycast(tank_pos, gun_dir, obstacles, dist_to_enemy, first_only=True)
+    hit = raycast(tank_pos, tank_gun_dir, obstacles, dist_to_enemy, first_only=True)
     if hit:  # if no hits, what are we shooting at?
         if hit[0].center == closest_enemy:
             shot_is_clear = True

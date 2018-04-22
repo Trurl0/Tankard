@@ -145,6 +145,9 @@ class Tank():
                 
                 self.game.bullets.append(Bullet(self.game, add(self.rect.center, mult(self.gun_dir, 20)), vel=mult(normalize(self.gun_dir), self.shoot_speed), damage=self.gun_damage))
                 
+                if self.game.sound:
+                    self.game.gun_sound.play()
+                
     def sonar(self):
         """Return Rect of game objects in distance"""
         
@@ -170,6 +173,9 @@ class Tank():
         
         self.is_dead = True
         
+        if self.game.sound and self.dead_animation_counter == 0:
+            self.game.failure_sound.play()
+        
         self.dead_animation_counter += 1
         
         if self.dead_animation_counter > 150:
@@ -183,8 +189,12 @@ class Tank():
                 if self.rect.colliderect(coll):
                     
                     intersection = self.rect.clip(coll)
-                    push = mult(normalize(sub(self.pos, intersection)), 2)
-                    
+                    if intersection == self.rect:
+                        # Whole Tank inside obstacle
+                        push = mult(normalize(sub(self.pos, coll.rect.center)), 2)
+                    else:
+                        push = mult(normalize(sub(self.pos, intersection)), 2)
+                        
                     self.pos = add(push, self.pos)
                     
                     # Stop after collision?
@@ -216,6 +226,9 @@ class Tank():
                 self.life += battery.energy
                 
                 self.game.batteries.remove(battery)
+                
+                if self.game.sound:
+                    self.game.battery_sound.play()
        
     def draw(self):
                   
