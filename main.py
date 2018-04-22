@@ -31,6 +31,7 @@ class Game:
     
         pygame.init()
         pygame.display.set_caption('Tanks')
+        # DISPLAYSURF = pygame.display.set_mode((400, 300), pygame.FULLSCREEN)
         
         self.screen_width=1000
         self.screen_height=600
@@ -53,6 +54,7 @@ class Game:
         self.bullet_damage = 10
         
         self.debug = 0
+        self.fullscreen = 0
         
         try:
             self.config("config.ini")
@@ -60,6 +62,7 @@ class Game:
             print(e)
             
         self.screen=pygame.display.set_mode([self.screen_width, self.screen_height])
+        # self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.FULLSCREEN)
         
         self.last = pygame.time.get_ticks()
         self.clock = pygame.time.Clock()
@@ -190,8 +193,9 @@ class Game:
              if event.type==pygame.QUIT:
                 self.running = False
                 pygame.quit()
+                quit()
              if event.type==pygame.KEYDOWN:
-                   if event.key==pygame.K_RETURN:
+                   if event.key in [pygame.K_RETURN, pygame.K_ESCAPE, pygame.K_SPACE]:
                       self.pause()
 
     def update(self):
@@ -244,17 +248,22 @@ class Game:
         while wait:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                   pygame.quit()
-                   quit()
+                    pygame.quit()
+                    quit()
                 if event.type == pygame.KEYDOWN:
-                   if event.key == pygame.K_RETURN:
-                      wait = False
-                   if event.key == pygame.K_r:
-                      wait = False
-                      self.new()
+                    if event.key == pygame.K_ESCAPE:
+                        wait = False
+                        pygame.quit()
+                        quit()
+                    if event.key in [pygame.K_RETURN, pygame.K_SPACE]:
+                        wait = False
+                    if event.key == pygame.K_r:
+                        wait = False
+                        self.new()
             self.msg("Paused", self.screen_width*0.80, self.screen_height*0.60, WHITE, 60)
             self.msg("Press Enter to resume", self.screen_width*0.81, self.screen_height*0.90, WHITE, 20)
-            self.msg("Press r to re-start", self.screen_width*0.85, self.screen_height*1.05, WHITE, 20)
+            self.msg("Press R to re-start", self.screen_width*0.85, self.screen_height*1.00, WHITE, 20)
+            self.msg("Press Esc to exit", self.screen_width*0.87, self.screen_height*1.1, WHITE, 20)
             pygame.display.flip()
         
         #Clear txt
@@ -268,12 +277,15 @@ class Game:
                    pygame.quit()
                    quit()
                 if event.type == pygame.KEYDOWN:
-                   if event.key == pygame.K_RETURN:
-                      wait = False
-        # self.screen_width=1000
-        # self.screen_height=600
+                    if event.key == pygame.K_RETURN:
+                        wait = False
+                    if event.key == pygame.K_ESCAPE:
+                        wait = False
+                        pygame.quit()
+                        quit()
              self.msg("Winner: Team "+str(team_alive)+"!", self.screen_width*0.48, self.screen_height*0.60, color, 60)
              self.msg("Press Enter to Play Again", self.screen_width*0.73, self.screen_height*1.0, color, 20)
+             self.msg("Press Esc to exit", self.screen_width*0.83, self.screen_height*1.10, color, 20)
              pygame.display.flip()
         self.new()
      
