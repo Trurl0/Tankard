@@ -39,7 +39,7 @@ And must return the following tuple:
 ```   
 (acceleration, gun_dir, shoot_order)
 acceleration                   # (x, y) Tank acceleration
-gun_dir                        # (x, y) Where the cannon should be pointing 
+gun_dir                        # (x, y) Where the cannon should be pointing, referenced from tank_pos
 shoot_order                    # True or False, try to shoot when able
 ```   
 
@@ -84,7 +84,7 @@ An example on how to use raycast:
 # target_rect is the detected enemy we want shot
 hit = raycast(tank_pos, gun_dir, obstacles, dist_to_enemy, first_only=True)
     if hit:
-        if hit[0].center == target_rect:
+        if hit[0].center == target_rect.center:
             print("Shot is clear!")
 ```
 ### Notes on safety
