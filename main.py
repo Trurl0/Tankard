@@ -42,11 +42,13 @@ class Game:
         self.number_of_players = 2
         self.tanks_per_team = 5
         self.player1_input = "player1.py"
-        self.player2_input = "player1.py"
-        self.player1_color = BLUE
-        self.player2_color = RED
         self.player1_color = (40,40,200)
+        self.player2_input = "player1.py"
         self.player2_color = (200,40,40)
+        self.player3_input = "player1.py"
+        self.player3_color = (40,100,40)
+        self.player4_input = "player1.py"
+        self.player4_color = (200,200,40)
         
         self.number_of_obstacles = 8
         self.number_of_batteries = 10
@@ -89,7 +91,7 @@ class Game:
     
         if not os.path.exists(filename):
              with open(filename, 'w') as f:
-                f.write("width = 1000\nheight = 600\nbackground_color = (160, 175, 160)\n\nplayers = 2\ntanks_per_team = 5\nplayer1 = player1.py\nplayer2 = player2.py\n\nnumber_of_obstacles = 6\nnumber_of_batteries = 10\ntime_limit = 60\ngun_cooldown = 4\nbullet_damage = 20\n\nsound = 1\ndebug = 0")
+                f.write("width = 1000\nheight = 600\nbackground_color = (160, 175, 160)\n\nplayers = 2\ntanks_per_team = 5\nplayer1 = player1.py\nplayer2 = player2.py\nplayer3 = player3.py\nplayer4 = player4.py\n\nnumber_of_obstacles = 6\nnumber_of_batteries = 10\ntime_limit = 60\ngun_cooldown = 4\nbullet_damage = 20\n\nsound = 1\ndebug = 0")
 
         with open(filename, "r") as f:
             for line in f.readlines():
@@ -125,6 +127,18 @@ class Game:
                     self.player2_input=line.split("=")[-1].strip()
                     # Create input file if does not exists
                     check_player_file(self.player2_input)
+                    
+                if "player3" in line:
+                    self.player3_input=line.split("=")[-1].strip()
+                    # Create input file if does not exists
+                    if(self.number_of_players>2):
+                        check_player_file(self.player3_input)
+                    
+                if "player4" in line:
+                    self.player4_input=line.split("=")[-1].strip()
+                    # Create input file if does not exists
+                    if(self.number_of_players>3):
+                        check_player_file(self.player4_input)
                     
                 if "number_of_obstacles" in line:
                     self.number_of_obstacles=int(line.split("=")[-1].strip())
@@ -196,14 +210,39 @@ class Game:
         # Tanks
         for i in range(self.tanks_per_team):
                 
-                # Max 10 tanks per column
-                col = int(i/10)+1
-                row = i-(10*(col-1))
+                # Max row_pos tanks per column (equal to len(row_pos))
+                row_pos = [0.3, 0.4, 0.5, 0.6, 0.7]
+                col_pos = [0.1, 0.15, 0.2, 0.25, 0.3]
                 
-                self.tanks.append(Tank(self, "P1-"+str(i+1), team=1, input_file=self.player1_input, color=self.player1_color, pos=[self.screen_width*0.1*(col), self.screen_height*0.09*(row+1)], max_speed=self.max_speed, gun_damage=self.bullet_damage, gun_max_cooldown=self.gun_cooldown))
+                row_num = i - len(row_pos) * int(i/(len(row_pos)))
+                col_num = int(i/(len(row_pos)-1)) - int(i/(len(col_pos)-1))
                 
-                self.tanks.append(Tank(self, "P2-"+str(i+1), team=2, input_file=self.player2_input, color=self.player2_color, pos=[self.screen_width*(1-(0.1*col)), self.screen_height*0.09*(row+1)], max_speed=self.max_speed, gun_damage=self.bullet_damage, gun_max_cooldown=self.gun_cooldown))
+                
+                self.tanks.append(Tank(self, "P1-"+str(i+1), team=1, input_file=self.player1_input, color=self.player1_color, pos=[self.screen_width*col_pos[col_num], self.screen_height*row_pos[row_num]], max_speed=self.max_speed, gun_damage=self.bullet_damage, gun_max_cooldown=self.gun_cooldown))
+                
+                row_pos = [0.3, 0.4, 0.5, 0.6, 0.7]
+                col_pos = [0.9, 0.85, 0.8, 0.75, 0.6]
+                self.tanks.append(Tank(self, "P2-"+str(i+1), team=2, input_file=self.player2_input, color=self.player2_color, pos=[self.screen_width*col_pos[col_num], self.screen_height*row_pos[row_num]], max_speed=self.max_speed, gun_damage=self.bullet_damage, gun_max_cooldown=self.gun_cooldown))
         
+                if self.number_of_players>2:
+                    
+                    col_pos = [0.3, 0.4, 0.5, 0.6, 0.7]
+                    row_pos = [0.9, 0.85, 0.8, 0.75, 0.6]
+                    
+                    col_num = i - len(row_pos) * int(i/(len(row_pos)))
+                    row_num = int(i/(len(row_pos)-1)) - int(i/(len(col_pos)-1))
+                    
+                    self.tanks.append(Tank(self, "P3-"+str(i+1), team=3, input_file=self.player3_input, color=self.player3_color, pos=[self.screen_width*col_pos[col_num], self.screen_height*row_pos[row_num]], max_speed=self.max_speed, gun_damage=self.bullet_damage, gun_max_cooldown=self.gun_cooldown))
+            
+                if self.number_of_players>3:
+                
+                    col_pos = [0.3, 0.4, 0.5, 0.6, 0.7]
+                    row_pos = [0.1, 0.15, 0.2, 0.25, 0.3]
+                    
+                    self.tanks.append(Tank(self, "P4-"+str(i+1), team=4, input_file=self.player4_input, color=self.player4_color, pos=[self.screen_width*col_pos[col_num], self.screen_height*row_pos[row_num]], max_speed=self.max_speed, gun_damage=self.bullet_damage, gun_max_cooldown=self.gun_cooldown))
+            
+                
+                
         self.game_init_time = time.time()
         
         if self.sound:

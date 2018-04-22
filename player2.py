@@ -1,6 +1,5 @@
 from utils import *
 import random
-        
 
 def player_input(map_width, map_height, tank_pos, tank_vel, tank_life, tank_gun_dir, tank_gun_cooldown, tank_team, sonar_reading):
         
@@ -9,7 +8,6 @@ def player_input(map_width, map_height, tank_pos, tank_vel, tank_life, tank_gun_
     shoot_order = False
     
     #----------Your code here----------#
-    
     acceleration = sub((map_width/2, map_height/2), tank_pos)   
     random_acc = (random.uniform(-1, 1), random.uniform(-1, 1))
     
@@ -45,7 +43,7 @@ def player_input(map_width, map_height, tank_pos, tank_vel, tank_life, tank_gun_
         if "Tank" in obj_type and obj_team == tank_team:
             dist =  magnitude(sub(obj_rect.center, tank_pos))
             if dist < 100:
-                avoid_allies_acc = add(avoid_allies_acc, mult(sub(tank_pos, obj_rect.center), 10))
+                avoid_allies_acc = add(avoid_allies_acc, mult(sub(tank_pos, obj_rect.center), 50))
             
     
     if closest_battery:
@@ -58,6 +56,7 @@ def player_input(map_width, map_height, tank_pos, tank_vel, tank_life, tank_gun_
             
     if closest_enemy is not None:
         gun_dir = sub(closest_enemy, tank_pos)
+         # check_clear_shot(tank_pos, gun_dir, tank_gun_dir, closest_enemy, obstacles)
         if check_clear_shot(tank_pos, gun_dir, tank_gun_dir, closest_enemy, [obj[2] for obj in sonar_reading]):
             shoot_order = True
     
@@ -77,7 +76,7 @@ def player_input(map_width, map_height, tank_pos, tank_vel, tank_life, tank_gun_
     
     #----------Your code here----------#
         
-    return acceleration, gun_dir, shoot_order
+    return (acceleration, gun_dir, shoot_order)
     
     
 def avoid_obstacles(tank_pos, target, acceleration, obstacles, avoid_distance):
@@ -97,7 +96,6 @@ def avoid_obstacles(tank_pos, target, acceleration, obstacles, avoid_distance):
             new_acceleration = normalize(sub(acceleration_dir, obstacle_dir))
         
     return mult(new_acceleration, acc_magnitude)
-    
     
     
 def check_clear_shot(tank_pos, gun_dir, tank_gun_dir, closest_enemy, obstacles):
