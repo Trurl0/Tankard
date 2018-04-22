@@ -1,6 +1,8 @@
 # Tankard
 Top-down shooter without controls, the players code the behaviour of their units in real time. Built with Python3 and pygame.
 
+A nice way of getting into programming with python and some violence.
+
 ## How to play:
 
 The following variables in config.ini define the user input files:
@@ -14,25 +16,25 @@ Player1 units will use the function player_input() defined in player1.py to calc
 
 Player2 units will use the one defined in player2.py
 
-
-The goal is to program a smartet AI than your oponent (and murder its troops, obviously).
+#### The goal of the game is to program a smarter AI than your oponent (and murder its troops, of course).
 
 
 ## Input:
 
-The input language is Python 3.6.
+The input language is Python 3.6.5
 
-player_input() has the following inputs:
+The main function player_input() is called each game frame.
+It has the following inputs:
 
 ```
-screen_width, screen_height    # "Map" boundaries
+screen_width, screen_height    # Map boundaries
 tank_pos, tank_vel, tank_life  # Tank position, velocity and life. All vectors are tuples (x, y)
 tank_gun_dir                   # Where the tank's cannon is pointing
 tank_gun_cooldown              # Remaining time to be able to shoot again
 tank_team                      # Tank faction
-sonar_reading                  # List with all game objects detected by the tank.
+sonar_reading                  # List with all game objects detected by the tank within its range.
 ```   
-and must return the following tuple:
+And must return the following tuple:
 
 ```   
 (acceleration, gun_dir, shoot_order)
@@ -53,15 +55,17 @@ obj_team                       # Object faction, 0 for neutral objects
 An example on how to access sonar info:
 ```   
 for obj_type, obj_name, obj_rect, obj_team in sonar_reading:
-        # Do stuff to close enemies
-        if "Tank" in obj_type and obj_team!= tank_team:
-            dist =  magnitude(sub(obj_rect.center, tank_pos))
-            if dist < 300:
-                # Do stuff
+    # Do stuff to close enemies
+    if "Tank" in obj_type and obj_team!= tank_team:
+        dist =  magnitude(sub(obj_rect.center, tank_pos))
+        if dist < 300:
+            # Do stuff
 ```   
 
+Aditional functions can (and should!) be defined and used within player_input()
+
 ### Utilities
-The following functions can be used in player_input():
+The following functions are already defined and can be used in player_input():
 
 ```   
 # v = (x,y) and e = escalar, int or float
@@ -71,6 +75,7 @@ add(u, v)                     # Adds two vectors
 sub(u, v)                     # Substracts u from v
 dot(u, v)                     # Vectorial product
 mult(v, e)                    # Multiply vector v by an escalar e
+
 raycast(ini, dir, object_rects, max_dist, first_only=False)
                               # Gives the objects found in a line starting in ini with direction dir, until max_dist. No new objects are detected, only checks if any known object rect (passed by the user in object_rects) is in the line specified.
 ```
@@ -82,5 +87,9 @@ hit = raycast(tank_pos, gun_dir, obstacles, dist_to_enemy, first_only=True)
         if hit[0].center == target_rect:
             print("Shot is clear!")
 ```
+### Notes on safety
+The player files are run as normal python, everything is allowed, imports, calling foreign code, closing python, etc.
+
+Do what you want, we are all consenting adults, but the game works best if you don't break it :)
 
 ## Have fun!
