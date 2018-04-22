@@ -19,6 +19,7 @@ import pygame,random
 import math
 import random
 import os
+import time
 from wall import Wall
 from tank import Tank
 from battery import Battery
@@ -66,17 +67,18 @@ class Game:
         
         self.last = pygame.time.get_ticks()
         self.clock = pygame.time.Clock()
-
-        self.walls = []
-        self.tanks = []
         
         self.running = True
+        self.game_init_time = 0
+        self.time_limit = 60*2  # seconds
+
+        self.selected = None
     
     def config(self, filename):
     
         if not os.path.exists(filename):
              with open(filename, 'w') as f:
-                f.write("width = 1000\nheight = 600\nbackground_color = (160, 175, 160)\nplayers = 2\ntanks_per_team = 5\nplayer1 = player1.py\nplayer2 = player2.py\nnumber_of_obstacles = 6\nnumber_of_batteries = 10\ngun_cooldown = 4\nbullet_damage = 20\ndebug = 0")
+                f.write("width = 1000\nheight = 600\nbackground_color = (160, 175, 160)\n\nnumber_of_obstacles = 6\nnumber_of_batteries = 10\n\nplayers = 2\ntanks_per_team = 5\nplayer1 = player1.py\nplayer2 = player2.py\n\ngun_cooldown = 4\nbullet_damage = 20\n\n# Round limit (seconds)\ntime_limit = 60\n\ndebug = 0")
 
         with open(filename, "r") as f:
             for line in f.readlines():
@@ -131,6 +133,9 @@ class Game:
                 if "debug" in line:
                     self.debug=int(line.split("=")[-1].strip())
                     
+                if "time_limit" in line:
+                    self.time_limit=int(line.split("=")[-1].strip())
+                    
     def new(self):
         """Reset all components for a new game"""
         
@@ -176,10 +181,16 @@ class Game:
             
         # Tanks
         for i in range(self.tanks_per_team):
+                
+                # Max 10 tanks per column
+                col = int(i/10)+1
+                row = i-(10*(col-1))
+                
+                self.tanks.append(Tank(self, "P1-"+str(i+1), team=1, input_file=self.player1_input, color=self.player1_color, pos=[self.screen_width*0.1*(col), self.screen_height*0.09*(row+1)], max_speed=self.max_speed, gun_damage=self.bullet_damage, gun_max_cooldown=self.gun_cooldown))
+                
+                self.tanks.append(Tank(self, "P2-"+str(i+1), team=2, input_file=self.player2_input, color=self.player2_color, pos=[self.screen_width*(1-(0.1*col)), self.screen_height*0.09*(row+1)], max_speed=self.max_speed, gun_damage=self.bullet_damage, gun_max_cooldown=self.gun_cooldown))
         
-            self.tanks.append(Tank(self, "P1-"+str(i+1), team=1, input_file=self.player1_input, color=self.player1_color, pos=[self.screen_width*0.1, self.screen_height*0.1*(i+1)], max_speed=self.max_speed, gun_damage=self.bullet_damage, gun_max_cooldown=self.gun_cooldown))
-            
-            self.tanks.append(Tank(self, "P2-"+str(i+1), team=2, input_file=self.player2_input, color=self.player2_color, pos=[self.screen_width*0.9, self.screen_height*0.1*(i+1)], max_speed=self.max_speed, gun_damage=self.bullet_damage, gun_max_cooldown=self.gun_cooldown))
+        self.game_init_time = time.time()
         
     def run(self):
       while self.running:
@@ -189,28 +200,84 @@ class Game:
          pygame.display.flip()
       
     def event(self):
-          for event in pygame.event.get():
-             if event.type==pygame.QUIT:
+        for event in pygame.event.get():
+            if event.type==pygame.QUIT:
                 self.running = False
                 pygame.quit()
                 quit()
-             if event.type==pygame.KEYDOWN:
-                   if event.key in [pygame.K_RETURN, pygame.K_ESCAPE, pygame.K_SPACE]:
-                      self.pause()
+                
+            # Keys
+            if event.type==pygame.KEYDOWN:
+                if event.key in [pygame.K_RETURN, pygame.K_ESCAPE, pygame.K_SPACE]:
+                    self.pause()
+                    
+                if event.key == pygame.K_DELETE:
+                    if self.selected:
+                        if self.selected in self.tanks:
+                            self.tanks.remove(self.selected)
+                        if self.selected in self.batteries:
+                            self.batteries.remove(self.selected)
+                        if self.selected in self.walls:
+                            self.walls.remove(self.selected)
+                    
+            # Mouse
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                x, y = event.pos
+                
+                # Lose control
+                if self.selected in self.tanks:
+                    self.selected.override_ai = False
+                    self.selected.selected = False
+                    self.selected = None
+                    
+                for obj in self.tanks+self.walls+self.batteries:
+                    if obj.rect.collidepoint(x, y):
+                        print("Selected: "+obj.name)
+                        self.selected = obj
+                        if self.selected in self.tanks:
+                            self.selected.selected = True
 
+            if self.selected in self.tanks:
+            
+                if event.type==pygame.KEYDOWN:
+                    if event.key in [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d]:
+                        self.selected.override_ai = True
+                    if event.key == pygame.K_w:
+                        self.selected.acc = (0, -1)
+                    if event.key == pygame.K_s:
+                        self.selected.acc = (0, 1)
+                    if event.key == pygame.K_a:
+                        self.selected.acc = (-1, 0)
+                    if event.key == pygame.K_d:
+                        self.selected.acc = (1, 0)
+                        
+                if event.type==pygame.MOUSEMOTION:
+                    x, y = event.pos
+                    self.selected.gun_target = sub((x, y), self.selected.rect.center)
+                        
+                if event.type==pygame.MOUSEBUTTONDOWN and event.button == 3:
+                    self.selected.shoot_order = True
+                
+                    
+                    
     def update(self):
         """Make all screen elements update themselves"""
         
         # Used to manage how fast the screen updates
         self.clock.tick(500)
-        now = pygame.time.get_ticks()
+        ticks = pygame.time.get_ticks()
+        now = time.time()
         
+            
         # Move actors
         for t in self.tanks + self.bullets:
             t.update(now)
             t.check_collisions()
         
         self.check_game_over()
+        
+        if time.time() - self.game_init_time  > self.time_limit:
+            self.game_over("None", WHITE)
         
     def draw(self):
         """Make all screen elements draw themselves"""
@@ -239,7 +306,7 @@ class Game:
                 break
                 
         if game_over:
-            self.game_over(team_alive, team_color)
+            self.game_over("Team "+str(team_alive), team_color)
         
     def pause(self):
         """Pause the game"""
@@ -272,21 +339,21 @@ class Game:
     def game_over(self, team_alive, color):
         wait = True
         while wait:
-             for event in pygame.event.get():
+            for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                    pygame.quit()
                    quit()
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
+                    if event.key in [pygame.K_RETURN, pygame.K_SPACE]:
                         wait = False
                     if event.key == pygame.K_ESCAPE:
                         wait = False
                         pygame.quit()
                         quit()
-             self.msg("Winner: Team "+str(team_alive)+"!", self.screen_width*0.48, self.screen_height*0.60, color, 60)
-             self.msg("Press Enter to Play Again", self.screen_width*0.73, self.screen_height*1.0, color, 20)
-             self.msg("Press Esc to exit", self.screen_width*0.83, self.screen_height*1.10, color, 20)
-             pygame.display.flip()
+            self.msg("Winner: "+str(team_alive)+"!", self.screen_width*0.48, self.screen_height*0.60, color, 60)
+            self.msg("Press Enter to Play Again", self.screen_width*0.73, self.screen_height*1.0, color, 20)
+            self.msg("Press Esc to exit", self.screen_width*0.83, self.screen_height*1.10, color, 20)
+            pygame.display.flip()
         self.new()
      
     def msg(self, text, x, y, color, size):

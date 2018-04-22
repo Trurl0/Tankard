@@ -56,6 +56,9 @@ class Tank():
         self.sonar_max_cooldown = sonar_max_cooldown
         self.sonar_cooldown = sonar_max_cooldown
         self.sonar_reading = []
+        
+        self.override_ai = False
+        self.selected = False
       
     def update(self, now):
         """Update tank state with player input"""
@@ -65,6 +68,7 @@ class Tank():
         
         if not self.is_dead:
             
+          
             # Get sonar reading
             self.sonar_cooldown -= 1
             if self.sonar_cooldown <= 0:
@@ -72,50 +76,49 @@ class Tank():
                 self.sonar_reading = self.sonar()
 
                 
+            if not self.override_ai:
             #----------Here goes the player logic----------#
             
-            self.player_input_cooldown -= 1
-            if self.player_input_cooldown <= 0:
-                self.player_input_cooldown = self.player_input_max_cooldown
-                
-                try:
-
-                    self.player_import_cooldown -= 1
-                    if self.player_import_cooldown <= 0:
-                        self.player_import_cooldown = self.player_import_max_cooldown
-                        
-                        # Import player code
-                        exec(open(self.input_file, "r").read(), globals())
-                        self.player_input = player_input
-                                    
-                    # Send info to player and use player code
-                    self.acc, self.gun_target, self.shoot_order = self.player_input(self.game.screen_width, self.game.screen_height, self.rect.center, self.vel, self.life, self.gun_dir, self.gun_cooldown, self.team, self.sonar_reading)
+                self.player_input_cooldown -= 1
+                if self.player_input_cooldown <= 0:
+                    self.player_input_cooldown = self.player_input_max_cooldown
                     
-                    # Checks and limitations
-                    if not isinstance(self.acc, tuple) or len(self.acc)!=2:
-                        self.acc = (0, 0)
+                    try:
 
-                    else:
-                        if magnitude(self.acc) > self.max_acc:
-                            self.acc = mult(normalize(self.acc), self.max_acc)
+                        self.player_import_cooldown -= 1
+                        if self.player_import_cooldown <= 0:
+                            self.player_import_cooldown = self.player_import_max_cooldown
+                            
+                            # Import player code
+                            exec(open(self.input_file, "r").read(), globals())
+                            self.player_input = player_input
+                                        
+                        # Send info to player and use player code
+                        self.acc, self.gun_target, self.shoot_order = self.player_input(self.game.screen_width, self.game.screen_height, self.rect.center, self.vel, self.life, self.gun_dir, self.gun_cooldown, self.team, self.sonar_reading)
                         
-                    if not isinstance(self.gun_target, tuple) or len(self.gun_target)!=2:
-                        self.gun_target = (0, -1)
-                    else:
-                        self.gun_target = normalize(self.gun_target)
-                        
-                    if not isinstance(self.shoot_order, bool):
+                        # Checks and limitations
+                        if not isinstance(self.acc, tuple) or len(self.acc)!=2:
+                            self.acc = (0, 0)
+                            
+                        if not isinstance(self.gun_target, tuple) or len(self.gun_target)!=2:
+                            self.gun_target = (0, -1)
+                            
+                        if not isinstance(self.shoot_order, bool):
+                            self.shoot_order = False
+                            
+                    except Exception as e:
+                        print(e)
+                        self.acc = (0, 0)
+                        self.gun_target = (0, 1)
                         self.shoot_order = False
-                        
-                except Exception as e:
-                    print(e)
-                    self.acc = (0, 0)
-                    self.gun_target = (0, 1)
-                    self.shoot_order = False
                     
             #----------Here ends the player logic----------#
-
             
+            
+            # Limit max acc
+            if magnitude(self.acc) > self.max_acc:
+                self.acc = mult(normalize(self.acc), self.max_acc)
+                
             # Substract friction, add acceleration
             friction = 0.99
             self.vel = mult(self.vel, friction)
@@ -130,6 +133,7 @@ class Tank():
             self.rect = pygame.Rect(self.pos[0], self.pos[1], self.size, self.size)
             
             # Orient gun to target
+            self.gun_target = normalize(self.gun_target)
             self.gun_dir = normalize(add(self.gun_dir, mult(sub(self.gun_target, self.gun_dir), self.turret_speed)))
             
             # Shoot
@@ -248,13 +252,18 @@ class Tank():
                 shot_size = 5
                 pygame.draw.line(self.game.screen, YELLOW, shot_ini,shot_end, shot_size)
                 
-        # Draw acceleration for debugging
-        if self.game.debug:
-            pygame.draw.line(self.game.screen, GREEN, self.rect.center, add(self.rect.center, mult(self.acc, 10000)), 1)
-                
         # Draw explosions on death
         if self.is_dead:
             pygame.draw.circle(self.game.screen, random.choice([YELLOW,YELLOW, RED]), [int(i+random.randint(0,self.size*2)) for i in self.pos], random.randint(0,50))
+                
+        # Draw acceleration for debugging
+        if self.game.debug:
+            pygame.draw.line(self.game.screen, GREEN, self.rect.center, add(self.rect.center, mult(self.acc, 10000)), 1)
+            
+        # Draw name if selected
+        if self.selected:
+            self.game.msg(self.name, self.rect.center[0]*2-35, self.rect.center[1]*2+15, self.color, 15)
+                
                 
     def __str__():
     

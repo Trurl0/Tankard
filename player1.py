@@ -100,7 +100,6 @@ def avoid_obstacles(tank_pos, target, acceleration, obstacles, avoid_distance):
 def check_clear_shot(tank_pos, gun_dir, closest_enemy, obstacles):
     
     shot_is_clear = False
-    print(closest_enemy)
     dist_to_enemy = magnitude(gun_dir)
     hit = raycast(tank_pos, gun_dir, obstacles, dist_to_enemy, first_only=True)
     if hit:  # if no hits, what are we shooting at?
