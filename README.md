@@ -12,7 +12,7 @@ player1 = player1.py
 player2 = player2.py
 ```
 
-Player1 units will use the function player_input() defined in player1.py to calculate its movement and shooting.
+Player1 units will use the function player_input() defined in player1.py to calculate its movement and shooting orders.
 
 Player2 units will use the one defined in player2.py
 
@@ -23,7 +23,7 @@ Player2 units will use the one defined in player2.py
 
 The input language is Python 3.6.5
 
-The main function player_input() is called each game frame.
+The main function player_input() is called periodically (each 0.5s).
 It has the following inputs:
 
 ```
