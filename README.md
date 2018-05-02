@@ -18,6 +18,7 @@ Player2 units will use the one defined in player2.py
 
 #### The goal of the game is to program a smarter AI than your oponent (and murder its troops, of course).
 
+(I have left my testint AI in player2.py if you want to try to beat it)
 
 ## Input:
 
@@ -28,10 +29,10 @@ It has the following inputs:
 
 ```
 screen_width, screen_height    # Map boundaries
-tank_pos, tank_vel, tank_life  # Tank position, velocity and life. All vectors are tuples (x, y)
-tank_gun_dir                   # Where the tank's cannon is pointing
-tank_gun_cooldown              # Remaining time to be able to shoot again
-tank_team                      # Tank faction
+my_pos, my_vel, my_life        # Tank position, velocity and life. All vectors are tuples (x, y)
+my_gun_dir                     # Where the tank's cannon is pointing
+my_gun_cooldown                # Remaining time to be able to shoot again
+my_name my_team                # Tank name and faction
 sonar_reading                  # List with all game objects detected by the tank within its range.
 ```   
 And must return the following tuple:
@@ -48,7 +49,8 @@ sonar_reading is a list of tuples with the following info:
 ```   
 obj_type                       # String with object class Tank, Wall, Battery... 
 obj_name                       # Object name
-obj_rect                       # Tuple with object coordinates (upper_left_x, upper_left_y, bottom_right_x, bottom_right_y). This is a pygame.Rect object, you can use obj_rect.center and such (https://www.pygame.org/docs/ref/rect.html)
+obj_rect                       # Tuple with object coordinates (upper_left_x, upper_left_y, bottom_right_x, bottom_right_y).
+                               # This is a pygame.Rect object, you can use obj_rect.center and such (https://www.pygame.org/docs/ref/rect.html)
 obj_team                       # Object faction, 0 for neutral objects
 ```   
 
@@ -71,13 +73,14 @@ The following functions are already defined and can be used in player_input():
 # v = (x,y) and e = escalar, int or float
 magnitude(v)                  # returns vector magnitude
 normalize(v)                  # returns vector normalized (original is not replaced)
-add(u, v)                     # Adds two vectors
-sub(u, v)                     # Substracts u from v
-dot(u, v)                     # Vectorial product
-mult(v, e)                    # Multiply vector v by an escalar e
+add_vector(u, v)              # Adds two vectors
+sub_vector(u, v)              # Substracts u from v
+dot_vector(u, v)              # Vectorial product
+mult_vector(v, e)             # Multiply vector v by an escalar e
 
 raycast(ini, dir, object_rects, max_dist, first_only=False)
-                              # Gives the objects found in a line starting in ini with direction dir, until max_dist. No new objects are detected, only checks if any known object rect (passed by the user in object_rects) is in the line specified.
+                              # Gives the objects found in a line starting in ini with direction dir, until max_dist. 
+                              # No new objects are detected, only checks if any known object rect (passed by the user in object_rects) is in the line specified.
 ```
 An example on how to use raycast:
 ```
