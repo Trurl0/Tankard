@@ -22,19 +22,19 @@ def normalize(v):
         return (0, 0)
         
         
-def add(u, v):
+def add_vector(u, v):
     return tuple([ u[i]+v[i] for i in range(len(u)) ])
 
 
-def sub(u, v):
+def sub_vector(u, v):
     return tuple([ u[i]-v[i] for i in range(len(u)) ])
 
 
-def dot(u, v):
+def dot_vector(u, v):
     return sum(u[i]*v[i] for i in range(len(u)))
 
 
-def mult(v, x):
+def mult_vector(v, x):
     return tuple([i*x for i in v])
 
 
@@ -46,7 +46,7 @@ def raycast(ini, dir, obstacle_rects, max_dist, first_only=False):
     point = ini
     
     for i in (x * step for x in range(0, int(max_dist*(1/step)))):
-        point = add(point, mult(normalize(dir), step))
+        point = add_vector(point, mult_vector(normalize(dir), step))
         for r in obstacle_rects:
             try:
                 if r.collidepoint(point):

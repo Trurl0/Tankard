@@ -13,7 +13,7 @@ def check_player_file(player_input_file):
 from utils import *\n\
 \n\
 \n\
-def player_input(map_width, map_height, tank_pos, tank_vel, tank_life, tank_gun_dir, tank_gun_cooldown, tank_team, sonar_reading):\n\
+def player_input(map_width, map_height, my_pos, my_vel, my_life, my_gun_dir, my_gun_cooldown, my_name, my_team, sonar_reading):\n\
     \n\
     acceleration = (0, 0)\n\
     gun_dir = (0, 0)\n\

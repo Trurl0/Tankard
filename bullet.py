@@ -17,7 +17,7 @@ class Bullet:
         
     def update(self, now):
     
-        self.pos = add(self.pos, self.vel)
+        self.pos = add_vector(self.pos, self.vel)
         self.rect = pygame.Rect(self.pos[0], self.pos[1], self.size, self.size)
     
     def check_collisions(self):
